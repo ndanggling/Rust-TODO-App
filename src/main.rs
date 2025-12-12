@@ -32,7 +32,7 @@ struct User {
     role: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Debug)]
 enum UserRole {
     Admin,
     User,
@@ -604,6 +604,13 @@ async fn create_user(
         return HttpResponse::Forbidden().body("Admin only");
     }
 
+    // ===== DEBUG: Print received data =====
+    println!("=== CREATE USER REQUEST ===");
+    println!("Username: {}", user_req.username);
+    println!("Password length: {}", user_req.password.len());
+    println!("Role: {:?}", user_req.role);
+    println!("========================");
+
     let existing_user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE username = ?")
         .bind(&user_req.username)
         .fetch_optional(&data.db)
@@ -611,12 +618,14 @@ async fn create_user(
         .unwrap_or(None);
 
     if existing_user.is_some() {
+        println!("❌ ERROR: Username already exists");  // Debug log
         return HttpResponse::BadRequest().json(serde_json::json!({
             "error": "Username sudah digunakan"
         }));
     }
 
     if user_req.password.len() < 6 {
+        println!("❌ ERROR: Password too short");  // Debug log
         return HttpResponse::BadRequest().json(serde_json::json!({
             "error": "Password minimal 6 karakter"
         }));
@@ -624,12 +633,17 @@ async fn create_user(
 
     let hashed_password = match hash(&user_req.password, DEFAULT_COST) {
         Ok(h) => h,
-        Err(_) => return HttpResponse::InternalServerError().json(serde_json::json!({
-            "error": "Gagal hash password"
-        })),
+        Err(e) => {
+            println!("❌ ERROR: Failed to hash password: {:?}", e);  // Debug log
+            return HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Gagal hash password"
+            }));
+        }
     };
 
     let role_str = user_req.role.to_string();
+    println!("✅ Inserting user into database...");  // Debug log
+    
     let result = sqlx::query("INSERT INTO users (username, password, role) VALUES (?, ?, ?)")
         .bind(&user_req.username)
         .bind(&hashed_password)
@@ -638,14 +652,20 @@ async fn create_user(
         .await;
 
     match result {
-        Ok(res) => HttpResponse::Ok().json(UserInfo {
-            id: res.last_insert_rowid(),
-            username: user_req.username.clone(),
-            role: user_req.role.clone(),
-        }),
-        Err(_) => HttpResponse::InternalServerError().json(serde_json::json!({
-            "error": "Gagal membuat user"
-        })),
+        Ok(res) => {
+            println!("✅ User created successfully with ID: {}", res.last_insert_rowid());
+            HttpResponse::Ok().json(UserInfo {
+                id: res.last_insert_rowid(),
+                username: user_req.username.clone(),
+                role: user_req.role.clone(),
+            })
+        }
+        Err(e) => {
+            println!("❌ ERROR: Database insert failed: {:?}", e);  // Debug log
+            HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Gagal membuat user"
+            }))
+        }
     }
 }
 
