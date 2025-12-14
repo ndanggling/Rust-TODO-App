@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rust TODO App - With Auth</title>
+    <title>Rust TODO App - Secure</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -62,6 +62,7 @@
         }
         .input-group {
             margin-bottom: 20px;
+            position: relative;
         }
         .input-group label {
             display: block;
@@ -69,7 +70,7 @@
             color: #333;
             font-weight: 500;
         }
-        input[type="text"], input[type="password"] {
+        input[type="text"], input[type="password"], select {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
@@ -77,9 +78,24 @@
             font-size: 16px;
             transition: border 0.3s;
         }
-        input:focus {
+        input[type="password"] {
+            padding-right: 45px;
+        }
+        input:focus, select:focus {
             outline: none;
             border-color: #667eea;
+        }
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 43px;
+            cursor: pointer;
+            user-select: none;
+            font-size: 20px;
+            color: #666;
+        }
+        .password-toggle:hover {
+            color: #667eea;
         }
         button {
             padding: 12px 25px;
@@ -95,6 +111,11 @@
         button:hover {
             background: #5568d3;
             transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
         }
         button.secondary {
             background: #6c757d;
@@ -210,7 +231,7 @@
             border: 1px solid #c3e6cb;
         }
         .hidden {
-            display: none;
+            display: none !important;
         }
         .tabs {
             display: flex;
@@ -230,13 +251,40 @@
             background: #667eea;
             color: white;
         }
+        .security-badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .admin-only-section {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .admin-only-section h3 {
+            color: #856404;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .lock-icon {
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
     <!-- Login/Register Form -->
     <div id="authContainer" class="container auth-container">
         <h1>🦀 Rust TODO App</h1>
-        <p class="subtitle">Sistem Autentikasi & Admin Panel</p>
+        <p class="subtitle">Sistem Autentikasi & Admin Panel <span class="security-badge">SECURE</span></p>
         
         <div id="errorMsg" class="error-msg hidden"></div>
         
@@ -249,6 +297,7 @@
             <div class="input-group">
                 <label>Password</label>
                 <input type="password" id="loginPassword" placeholder="Masukkan password">
+                <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
             </div>
             <button onclick="login()" style="width: 100%;">Login</button>
             <div class="form-footer">
@@ -269,7 +318,8 @@
             </div>
             <div class="input-group">
                 <label>Password</label>
-                <input type="password" id="registerPassword" placeholder="Pilih password">
+                <input type="password" id="registerPassword" placeholder="Pilih password (min 6 karakter)">
+                <span class="password-toggle" onclick="togglePassword('registerPassword')">👁️</span>
             </div>
             <button onclick="register()" style="width: 100%;">Daftar</button>
             <div class="form-footer">
@@ -281,7 +331,7 @@
     <!-- Main App -->
     <div id="appContainer" class="container hidden">
         <h1>🦀 Rust TODO App</h1>
-        <p class="subtitle">Selamat datang!</p>
+        <p class="subtitle">Selamat datang! <span class="security-badge">PROTECTED</span></p>
         
         <div class="user-info">
             <div>
@@ -291,16 +341,16 @@
             <button class="secondary" onclick="logout()">Logout</button>
         </div>
 
-        <!-- Tabs untuk Admin -->
+        <!-- Tabs untuk Admin ONLY -->
         <div id="adminTabs" class="tabs hidden">
             <button class="tab active" onclick="switchTab('todos')">My TODOs</button>
-            <button class="tab" onclick="switchTab('users')">User Management</button>
+            <button class="tab" onclick="switchTab('users')">🔒 User Management</button>
         </div>
 
         <!-- TODO Section -->
         <div id="todosSection">
             <div class="todo-input-group">
-                <input type="text" id="todoInput" placeholder="Tambahkan TODO baru...">
+                <input type="text" id="todoInput" placeholder="Tambahkan TODO baru..." maxlength="200">
                 <button onclick="addTodo()">Tambah</button>
             </div>
             
@@ -308,8 +358,19 @@
             <div id="emptyState" class="empty-state">Belum ada TODO. Mulai tambahkan sekarang!</div>
         </div>
 
-        <!-- Admin Panel -->
+        <!-- Admin Panel - HANYA UNTUK ADMIN -->
         <div id="usersSection" class="admin-panel hidden">
+            <div class="admin-only-section">
+                <h3>
+                    <span class="lock-icon">🔒</span>
+                    Admin Only Section
+                </h3>
+                <p style="color: #856404; margin: 0;">
+                    Hanya Administrator yang dapat mengakses User Management. 
+                    Semua operasi akan dicatat untuk audit keamanan.
+                </p>
+            </div>
+
             <h2>👥 User Management</h2>
             
             <!-- Add User Form -->
@@ -317,15 +378,16 @@
                 <h3 style="margin-bottom: 15px; color: #333;">➕ Tambah User Baru</h3>
                 <div class="input-group">
                     <label>Username</label>
-                    <input type="text" id="newUsername" placeholder="Username baru">
+                    <input type="text" id="newUsername" placeholder="Username baru" maxlength="50">
                 </div>
                 <div class="input-group">
                     <label>Password</label>
-                    <input type="password" id="newPassword" placeholder="Password (min. 6 karakter)">
+                    <input type="password" id="newPassword" placeholder="Password (min. 6 karakter)" maxlength="100">
+                    <span class="password-toggle" onclick="togglePassword('newPassword')">👁️</span>
                 </div>
                 <div class="input-group">
                     <label>Role</label>
-                    <select id="newUserRole" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px;">
+                    <select id="newUserRole">
                         <option value="User">User</option>
                         <option value="Admin">Admin</option>
                     </select>
@@ -339,12 +401,25 @@
     </div>
 
     <script>
-       const API_URL = 'https://porsha-brainlike-bula.ngrok-free.dev/api';
+        const API_URL = 'http://localhost:8080/api';
         let authToken = localStorage.getItem('authToken');
         let currentUser = null;
         let currentTab = 'todos';
 
-        // ========== AUTH FUNCTIONS ==========
+        // ========== UTILITY FUNCTIONS ==========
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const toggle = input.nextElementSibling;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                toggle.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                toggle.textContent = '👁️';
+            }
+        }
 
         function showError(message) {
             const errorDiv = document.getElementById('errorMsg');
@@ -352,6 +427,20 @@
             errorDiv.classList.remove('hidden');
             setTimeout(() => errorDiv.classList.add('hidden'), 5000);
         }
+
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-msg';
+            successDiv.textContent = message;
+            
+            const container = document.querySelector('#usersSection') || document.querySelector('#todosSection');
+            if (container) {
+                container.insertBefore(successDiv, container.firstChild);
+                setTimeout(() => successDiv.remove(), 3000);
+            }
+        }
+
+        // ========== AUTH FUNCTIONS ==========
 
         function showLogin() {
             document.getElementById('loginForm').classList.remove('hidden');
@@ -366,7 +455,7 @@
         }
 
         async function login() {
-            const username = document.getElementById('loginUsername').value;
+            const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
 
             if (!username || !password) {
@@ -397,11 +486,16 @@
         }
 
         async function register() {
-            const username = document.getElementById('registerUsername').value;
+            const username = document.getElementById('registerUsername').value.trim();
             const password = document.getElementById('registerPassword').value;
 
             if (!username || !password) {
                 showError('Username dan password harus diisi!');
+                return;
+            }
+
+            if (username.length < 3) {
+                showError('Username minimal 3 karakter!');
                 return;
             }
 
@@ -438,6 +532,11 @@
             localStorage.removeItem('authToken');
             document.getElementById('authContainer').classList.remove('hidden');
             document.getElementById('appContainer').classList.add('hidden');
+            
+            // Reset password fields
+            document.getElementById('loginPassword').type = 'password';
+            document.getElementById('registerPassword').type = 'password';
+            
             showLogin();
         }
 
@@ -473,18 +572,17 @@
             badge.textContent = currentUser.role;
             badge.className = `user-badge ${currentUser.role.toLowerCase()}`;
 
-            // Tampilkan tab management hanya untuk Admin
             const adminTabs = document.getElementById('adminTabs');
             const usersSection = document.getElementById('usersSection');
             
+            // 🔒 SECURITY: Hanya Admin yang bisa lihat User Management
             if (currentUser.role === 'Admin') {
                 adminTabs.classList.remove('hidden');
-                // Reset ke tab todos saat login
                 currentTab = 'todos';
                 document.getElementById('todosSection').classList.remove('hidden');
                 usersSection.classList.add('hidden');
             } else {
-                // Pastikan admin tabs dan users section tersembunyi untuk User biasa
+                // 🔒 User biasa: SEMBUNYIKAN semua elemen admin
                 adminTabs.classList.add('hidden');
                 usersSection.classList.add('hidden');
                 document.getElementById('todosSection').classList.remove('hidden');
@@ -530,7 +628,7 @@
                 li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
                 
                 let ownerBadge = '';
-                if (currentUser.role === 'Admin') {
+                if (currentUser.role === 'Admin' && todo.user_id !== currentUser.id) {
                     ownerBadge = ` <small style="color: #999;">(User ID: ${todo.user_id})</small>`;
                 }
                 
@@ -538,11 +636,17 @@
                     <input type="checkbox" class="todo-checkbox" 
                            ${todo.completed ? 'checked' : ''} 
                            onchange="toggleTodo(${todo.id})">
-                    <span class="todo-text">${todo.title}${ownerBadge}</span>
+                    <span class="todo-text">${escapeHtml(todo.title)}${ownerBadge}</span>
                     <button class="danger" onclick="deleteTodo(${todo.id})">Hapus</button>
                 `;
                 todoList.appendChild(li);
             });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         async function addTodo() {
@@ -554,21 +658,29 @@
                 return;
             }
             
+            if (title.length > 200) {
+                showError('TODO terlalu panjang! Maksimal 200 karakter.');
+                return;
+            }
+            
             try {
+                // 🔒 SECURITY: TIDAK mengirim user_id, server yang tentukan!
                 const response = await fetch(`${API_URL}/todos`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${authToken}`
                     },
-                    body: JSON.stringify({ title })
+                    body: JSON.stringify({ title }) // HANYA title!
                 });
 
                 if (response.ok) {
                     input.value = '';
                     loadTodos();
+                    showSuccess('TODO berhasil ditambahkan!');
                 } else {
-                    showError('Gagal menambah TODO');
+                    const data = await response.json();
+                    showError(data.error || 'Gagal menambah TODO');
                 }
             } catch (error) {
                 showError('Error: ' + error.message);
@@ -585,7 +697,8 @@
                 if (response.ok) {
                     loadTodos();
                 } else {
-                    showError('Gagal update TODO');
+                    const data = await response.json();
+                    showError(data.error || 'Gagal update TODO');
                 }
             } catch (error) {
                 showError('Error: ' + error.message);
@@ -603,8 +716,10 @@
 
                 if (response.ok) {
                     loadTodos();
+                    showSuccess('TODO berhasil dihapus!');
                 } else {
-                    showError('Gagal menghapus TODO');
+                    const data = await response.json();
+                    showError(data.error || 'Gagal menghapus TODO');
                 }
             } catch (error) {
                 showError('Error: ' + error.message);
@@ -614,9 +729,9 @@
         // ========== ADMIN FUNCTIONS ==========
 
         function switchTab(tab) {
-            // Cek apakah user adalah Admin
+            // 🔒 SECURITY: Double-check role sebelum switch tab
             if (currentUser.role !== 'Admin') {
-                showError('Hanya Admin yang bisa akses fitur ini!');
+                showError('Akses ditolak! Hanya Admin yang bisa mengakses User Management.');
                 return;
             }
             
@@ -634,7 +749,7 @@
                 document.getElementById('todosSection').classList.remove('hidden');
                 document.getElementById('usersSection').classList.add('hidden');
                 loadTodos();
-            } else {
+            } else if (tab === 'users') {
                 document.getElementById('todosSection').classList.add('hidden');
                 document.getElementById('usersSection').classList.remove('hidden');
                 loadUsers();
@@ -642,9 +757,9 @@
         }
 
         async function loadUsers() {
-            // Double-check: hanya Admin yang bisa load users
+            // 🔒 SECURITY: Cek role sebelum load users
             if (currentUser.role !== 'Admin') {
-                showError('Akses ditolak!');
+                showError('Akses ditolak! Hanya Admin yang bisa melihat daftar user.');
                 return;
             }
             
@@ -656,18 +771,9 @@
                 if (response.ok) {
                     const users = await response.json();
                     renderUsers(users);
-                    
-                    // Attach event listener untuk Enter key di form add user
-                    setTimeout(() => {
-                        const newPasswordInput = document.getElementById('newPassword');
-                        if (newPasswordInput) {
-                            newPasswordInput.addEventListener('keypress', (e) => {
-                                if (e.key === 'Enter') createNewUser();
-                            });
-                        }
-                    }, 100);
                 } else {
-                    showError('Gagal memuat users');
+                    const data = await response.json();
+                    showError(data.error || 'Gagal memuat users');
                 }
             } catch (error) {
                 showError('Error: ' + error.message);
@@ -677,6 +783,11 @@
         function renderUsers(users) {
             const usersList = document.getElementById('usersList');
             usersList.innerHTML = '';
+
+            if (users.length === 0) {
+                usersList.innerHTML = '<div class="empty-state">Tidak ada user</div>';
+                return;
+            }
 
             users.forEach(user => {
                 const div = document.createElement('div');
@@ -689,7 +800,7 @@
 
                 div.innerHTML = `
                     <div>
-                        <strong>${user.username}</strong>
+                        <strong>${escapeHtml(user.username)}</strong>
                         <span class="user-badge ${user.role.toLowerCase()}">${user.role}</span>
                     </div>
                     ${deleteBtn}
@@ -699,9 +810,9 @@
         }
 
         async function deleteUser(userId) {
-            // Cek apakah user adalah Admin
+            // 🔒 SECURITY: Cek role sebelum delete
             if (currentUser.role !== 'Admin') {
-                showError('Hanya Admin yang bisa menghapus user!');
+                showError('Akses ditolak! Hanya Admin yang bisa menghapus user.');
                 return;
             }
             
@@ -715,8 +826,10 @@
 
                 if (response.ok) {
                     loadUsers();
+                    showSuccess('User berhasil dihapus!');
                 } else {
-                    showError('Gagal menghapus user');
+                    const data = await response.json();
+                    showError(data.error || 'Gagal menghapus user');
                 }
             } catch (error) {
                 showError('Error: ' + error.message);
@@ -724,11 +837,9 @@
         }
 
         async function createNewUser() {
-            console.log('createNewUser called'); // Debug log
-            
-            // Cek apakah user adalah Admin
+            // 🔒 SECURITY: Cek role sebelum create user
             if (currentUser.role !== 'Admin') {
-                showError('Hanya Admin yang bisa menambah user!');
+                showError('Akses ditolak! Hanya Admin yang bisa menambah user.');
                 return;
             }
             
@@ -736,10 +847,13 @@
             const password = document.getElementById('newPassword').value;
             const role = document.getElementById('newUserRole').value;
 
-            console.log('Form values:', { username, password: password ? '***' : 'empty', role }); // Debug log
-
             if (!username || !password) {
                 showError('Username dan password harus diisi!');
+                return;
+            }
+
+            if (username.length < 3) {
+                showError('Username minimal 3 karakter!');
                 return;
             }
 
@@ -749,8 +863,6 @@
             }
 
             try {
-                console.log('Sending request to:', `${API_URL}/admin/users`); // Debug log
-                
                 const response = await fetch(`${API_URL}/admin/users`, {
                     method: 'POST',
                     headers: { 
@@ -760,10 +872,7 @@
                     body: JSON.stringify({ username, password, role })
                 });
 
-                console.log('Response status:', response.status); // Debug log
-                
                 const data = await response.json();
-                console.log('Response data:', data); // Debug log
 
                 if (response.ok) {
                     // Clear form
@@ -771,22 +880,17 @@
                     document.getElementById('newPassword').value = '';
                     document.getElementById('newUserRole').value = 'User';
                     
-                    // Show success message
-                    const successDiv = document.createElement('div');
-                    successDiv.className = 'success-msg';
-                    successDiv.textContent = `User "${data.username}" berhasil ditambahkan sebagai ${data.role}!`;
-                    document.querySelector('#usersSection').insertBefore(
-                        successDiv, 
-                        document.querySelector('#usersSection h3')
-                    );
-                    setTimeout(() => successDiv.remove(), 3000);
+                    // Reset password visibility
+                    const pwdInput = document.getElementById('newPassword');
+                    pwdInput.type = 'password';
+                    pwdInput.nextElementSibling.textContent = '👁️';
                     
+                    showSuccess(`User "${data.username}" berhasil ditambahkan sebagai ${data.role}!`);
                     loadUsers();
                 } else {
                     showError(data.error || 'Gagal menambah user');
                 }
             } catch (error) {
-                console.error('Error details:', error); // Debug log
                 showError('Error: ' + error.message);
             }
         }
@@ -794,6 +898,7 @@
         // ========== EVENT LISTENERS ==========
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Enter key handlers
             const todoInput = document.getElementById('todoInput');
             if (todoInput) {
                 todoInput.addEventListener('keypress', (e) => {
@@ -812,6 +917,15 @@
             if (registerPassword) {
                 registerPassword.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') register();
+                });
+            }
+
+            const newPassword = document.getElementById('newPassword');
+            if (newPassword) {
+                newPassword.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && currentUser && currentUser.role === 'Admin') {
+                        createNewUser();
+                    }
                 });
             }
         });
