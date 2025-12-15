@@ -163,6 +163,18 @@
             background: #c82333;
         }
 
+        button.warning {
+            background: #ffc107;
+            color: #212529;
+            padding: 8px 15px;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+
+        button.warning:hover {
+            background: #e0a800;
+        }
+
         .form-footer {
             text-align: center;
             margin-top: 20px;
@@ -258,6 +270,23 @@
             border-radius: 8px;
         }
 
+        .user-details {
+            flex: 1;
+        }
+
+        .password-display {
+            font-family: monospace;
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 5px;
+        }
+
         .error-msg {
             background: #f8d7da;
             color: #721c24;
@@ -301,22 +330,75 @@
             color: white;
         }
 
-        .security-badge {
-            display: inline-block;
-            background: #28a745;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            margin-left: 5px;
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+        }
+
+        .close-btn:hover {
+            color: #333;
+            transform: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
         }
     </style>
 </head>
 
 <body>
     <div id="authContainer" class="container auth-container">
-        <h1>ðŸ¦€ Rust TODO App</h1>
+        <h1>🦀 Rust TODO App</h1>
         <p class="subtitle">Sistem Autentikasi & Admin Panel <span class="security-badge">SECURE</span></p>
 
         <div id="errorMsg" class="error-msg hidden"></div>
@@ -329,16 +411,11 @@
             <div class="input-group">
                 <label>Password</label>
                 <input type="password" id="loginPassword" placeholder="Masukkan password">
-                <span class="password-toggle" onclick="togglePassword('loginPassword')">ðŸ‘ï¸</span>
+                <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
             </div>
             <button onclick="login()" style="width: 100%;">Login</button>
             <div class="form-footer">
                 Belum punya akun? <a onclick="showRegister()">Daftar di sini</a>
-            </div>
-            <div class="form-footer" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
-                <strong>Demo Account:</strong><br>
-                Admin: admin / admin123<br>
-                User: user / user123
             </div>
         </div>
 
@@ -350,7 +427,7 @@
             <div class="input-group">
                 <label>Password</label>
                 <input type="password" id="registerPassword" placeholder="Pilih password (min 6 karakter)">
-                <span class="password-toggle" onclick="togglePassword('registerPassword')">ðŸ‘ï¸</span>
+                <span class="password-toggle" onclick="togglePassword('registerPassword')">👁️</span>
             </div>
             <button onclick="register()" style="width: 100%;">Daftar</button>
             <div class="form-footer">
@@ -360,8 +437,8 @@
     </div>
 
     <div id="appContainer" class="container hidden">
-        <h1>ðŸ¦€ Rust TODO App</h1>
-        <p class="subtitle">Selamat datang! <span class="security-badge">PROTECTED</span></p>
+        <h1>🦀 Rust TODO App</h1>
+        <p class="subtitle">Selamat datang! <span class="security-badge">(CONNECTION PROTECTED!)</span></p>
 
         <div class="user-info">
             <div>
@@ -373,7 +450,7 @@
 
         <div id="adminTabs" class="tabs hidden">
             <button class="tab active" onclick="switchTab('todos')">My TODOs</button>
-            <button class="tab" onclick="switchTab('users')">ðŸ”’ User Management</button>
+            <button class="tab" onclick="switchTab('users')">🔒 User Management</button>
         </div>
 
         <div id="todosSection">
@@ -387,10 +464,10 @@
         </div>
 
         <div id="usersSection" class="admin-panel hidden">
-            <h2>ðŸ‘¥ User Management</h2>
+            <h2>👥 User Management</h2>
 
             <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <h3 style="margin-bottom: 15px; color: #333;">âž• Tambah User Baru</h3>
+                <h3 style="margin-bottom: 15px; color: #333;">➕ Tambah User Baru</h3>
                 <div class="input-group">
                     <label>Username</label>
                     <input type="text" id="newUsername" placeholder="Username baru" maxlength="50">
@@ -398,7 +475,7 @@
                 <div class="input-group">
                     <label>Password</label>
                     <input type="password" id="newPassword" placeholder="Password (min. 6 karakter)" maxlength="100">
-                    <span class="password-toggle" onclick="togglePassword('newPassword')">ðŸ‘ï¸</span>
+                    <span class="password-toggle" onclick="togglePassword('newPassword')">👁️</span>
                 </div>
                 <div class="input-group">
                     <label>Role</label>
@@ -410,17 +487,50 @@
                 <button onclick="createNewUser()" style="width: 100%;">Tambah User</button>
             </div>
 
-            <h3 style="margin-bottom: 15px; color: #333;">ðŸ“‹ Daftar User</h3>
+            <h3 style="margin-bottom: 15px; color: #333;">📋 Daftar User</h3>
             <div id="usersList"></div>
         </div>
     </div>
 
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit User</h3>
+                <button class="close-btn" onclick="closeEditModal()">×</button>
+            </div>
+            <div id="editModalError" class="error-msg hidden"></div>
+            <input type="hidden" id="editUserId">
+
+            <div class="input-group">
+                <label>Username (Optional)</label>
+                <input type="text" id="editUsername" placeholder="Biarkan kosong jika tidak diubah">
+            </div>
+            <div class="input-group">
+                <label>Password (Optional)</label>
+                <input type="password" id="editPassword" placeholder="Biarkan kosong jika tidak diubah">
+            </div>
+            <div class="input-group">
+                <label>Role</label>
+                <select id="editRole">
+                    <option value="User">User</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button class="secondary" onclick="closeEditModal()">Batal</button>
+                <button onclick="saveUserEdit()">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // ðŸ”§ FIX: Tambahkan /api di akhir URL!
         const API_URL = 'https://porsha-brainlike-bula.ngrok-free.dev/api';
         let authToken = localStorage.getItem('authToken');
         let currentUser = null;
         let currentTab = 'todos';
+        let allUsers = [];
 
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
@@ -428,10 +538,10 @@
 
             if (input.type === 'password') {
                 input.type = 'text';
-                toggle.textContent = 'ðŸ™ˆ';
+                toggle.textContent = '🙈';
             } else {
                 input.type = 'password';
-                toggle.textContent = 'ðŸ‘ï¸';
+                toggle.textContent = '👁️';
             }
         }
 
@@ -768,262 +878,198 @@
             }
         }
 
-        function renderUsers(users) {// Replace renderUsers function (around line 716) with this:
+        function renderUsers(users) {
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '';
+            allUsers = users; // Store globally for edit modal
 
-            function renderUsers(users) {
-                const usersList = document.getElementById('usersList');
-                usersList.innerHTML = '';
-                allUsers = users; // Store globally for edit modal
+            users.forEach(user => {
+                const div = document.createElement('div');
+                div.className = 'user-item';
 
-                users.forEach(user => {
-                    const div = document.createElement('div');
-                    div.className = 'user-item';
+                const canDelete = user.id !== currentUser.id;
+                const deleteBtn = canDelete
+                    ? `<button class="danger" onclick="deleteUser(${user.id})">Hapus</button>`
+                    : '<button class="danger" disabled style="opacity: 0.5;">You</button>';
 
-                    const canDelete = user.id !== currentUser.id;
-                    const deleteBtn = canDelete
-                        ? `<button class="danger" onclick="deleteUser(${user.id})">Hapus</button>`
-                        : '<button class="danger" disabled style="opacity: 0.5;">You</button>';
+                const editBtn = `<button class="warning" onclick="openEditModal(${user.id})">Edit</button>`;
 
-                    const editBtn = `<button class="warning" onclick="openEditModal(${user.id})">Edit</button>`;
+                div.innerHTML = `
+                    <div class="user-details">
+                        <div>
+                            <strong>${escapeHtml(user.username)}</strong>
+                            <span class="user-badge ${user.role.toLowerCase()}">${user.role}</span>
+                        </div>
+                        <div class="password-display" title="Password Hash (bcrypt)">
+                            🔒 ${user.password_hash}
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        ${editBtn}
+                        ${deleteBtn}
+                    </div>
+                `;
+                usersList.appendChild(div);
+            });
+        }
 
-                    div.innerHTML = `
-            <div class="user-details">
-                <div>
-                    <strong>${escapeHtml(user.username)}</strong>
-                    <span class="user-badge ${user.role.toLowerCase()}">${user.role}</span>
-                </div>
-                <div class="password-display" title="Password Hash (bcrypt)">
-                    🔒 ${user.password_hash}
-                </div>
-            </div>
-            <div class="user-actions">
-                ${editBtn}
-                ${deleteBtn}
-            </div>
-        `;
-                    usersList.appendChild(div);
+        async function deleteUser(userId) {
+            if (currentUser.role !== 'Admin') {
+                showError('Akses ditolak!');
+                return;
+            }
+
+            if (!confirm('Hapus user ini?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/admin/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
                 });
+
+                if (response.ok) {
+                    loadUsers();
+                    showSuccess('User berhasil dihapus!');
+                } else {
+                    showError('Gagal menghapus user');
+                }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        async function createNewUser() {
+            if (currentUser.role !== 'Admin') {
+                showError('Akses ditolak!');
+                return;
             }
 
-            async function deleteUser(userId) {
-                if (currentUser.role !== 'Admin') {
-                    showError('Akses ditolak!');
-                    return;
-                }
+            const username = document.getElementById('newUsername').value.trim();
+            const password = document.getElementById('newPassword').value;
+            const role = document.getElementById('newUserRole').value;
 
-                if (!confirm('Hapus user ini?')) return;
-
-                try {
-                    const response = await fetch(`${API_URL}/admin/users/${userId}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${authToken}` }
-                    });
-
-                    if (response.ok) {
-                        loadUsers();
-                        showSuccess('User berhasil dihapus!');
-                    } else {
-                        showError('Gagal menghapus user');
-                    }
-                } catch (error) {
-                    showError('Error: ' + error.message);
-                }
+            if (!username || !password) {
+                showError('Username dan password harus diisi!');
+                return;
             }
 
-            async function createNewUser() {
-                if (currentUser.role !== 'Admin') {
-                    showError('Akses ditolak!');
-                    return;
-                }
-
-                const username = document.getElementById('newUsername').value.trim();
-                const password = document.getElementById('newPassword').value;
-                const role = document.getElementById('newUserRole').value;
-
-                if (!username || !password) {
-                    showError('Username dan password harus diisi!');
-                    return;
-                }
-
-                if (password.length < 6) {
-                    showError('Password minimal 6 karakter!');
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`${API_URL}/admin/users`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${authToken}`
-                        },
-                        body: JSON.stringify({ username, password, role })
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        document.getElementById('newUsername').value = '';
-                        document.getElementById('newPassword').value = '';
-                        document.getElementById('newUserRole').value = 'User';
-
-                        showSuccess(`User "${data.username}" berhasil ditambahkan!`);
-                        loadUsers();
-                    } else {
-                        showError(data.error || 'Gagal menambah user');
-                    }
-                } catch (error) {
-                    showError('Error: ' + error.message);
-                }
-            }
-            // Paste this after line 818 (after createNewUser function)
-
-            function openEditModal(userId) {
-                const user = allUsers.find(u => u.id === userId);
-                if (!user) return;
-
-                document.getElementById('editUserId').value = userId;
-                document.getElementById('editUsername').value = '';
-                document.getElementById('editPassword').value = '';
-                document.getElementById('editRole').value = user.role;
-                document.getElementById('editModalError').classList.add('hidden');
-
-                document.getElementById('editUserModal').classList.add('show');
+            if (password.length < 6) {
+                showError('Password minimal 6 karakter!');
+                return;
             }
 
-            function closeEditModal() {
-                document.getElementById('editUserModal').classList.remove('show');
-            }
-
-            async function saveUserEdit() {
-                const userId = document.getElementById('editUserId').value;
-                const username = document.getElementById('editUsername').value.trim();
-                const password = document.getElementById('editPassword').value;
-                const role = document.getElementById('editRole').value;
-
-                const updates = {};
-                if (username) updates.username = username;
-                if (password) updates.password = password;
-                if (role) updates.role = role;
-
-                if (Object.keys(updates).length === 0) {
-                    document.getElementById('editModalError').textContent = 'Tidak ada perubahan!';
-                    document.getElementById('editModalError').classList.remove('hidden');
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`${API_URL}/admin/users/${userId}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${authToken}`
-                        },
-                        body: JSON.stringify(updates)
-                    });
-
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        closeEditModal();
-                        showSuccess('User berhasil diupdate!');
-                        loadUsers();
-                    } else {
-                        document.getElementById('editModalError').textContent = data.error || 'Gagal update user';
-                        document.getElementById('editModalError').classList.remove('hidden');
-                    }
-                } catch (error) {
-                    document.getElementById('editModalError').textContent = 'Error: ' + error.message;
-                    document.getElementById('editModalError').classList.remove('hidden');
-                }
-            }
-
-
-            function openEditModal(userId) {
-                const user = allUsers.find(u => u.id === userId);
-                if (!user) return;
-
-                document.getElementById('editUserId').value = userId;
-                document.getElementById('editUsername').value = '';
-                document.getElementById('editPassword').value = '';
-                document.getElementById('editRole').value = user.role;
-                document.getElementById('editModalError').classList.add('hidden');
-
-                document.getElementById('editUserModal').classList.add('show');
-            }
-
-            function closeEditModal() {
-                document.getElementById('editUserModal').classList.remove('show');
-            }
-
-            async function saveUserEdit() {
-                const userId = document.getElementById('editUserId').value;
-                const username = document.getElementById('editUsername').value.trim();
-                const password = document.getElementById('editPassword').value;
-                const role = document.getElementById('editRole').value;
-
-                const updates = {};
-                if (username) updates.username = username;
-                if (password) updates.password = password;
-                if (role) updates.role = role;
-
-                if (Object.keys(updates).length === 0) {
-                    document.getElementById('editModalError').textContent = 'Tidak ada perubahan!';
-                    document.getElementById('editModalError').classList.remove('hidden');
-                    return;
-                }
-
-                try {
-                    const response = await fetch(+"${API_URL}/admin/users/${userId}" +, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': +"Bearer ${authToken}" +
+            try {
+                const response = await fetch(`${API_URL}/admin/users`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
                     },
-                        body: JSON.stringify(updates)
-                    });
+                    body: JSON.stringify({ username, password, role })
+                });
 
-                    const data = await response.json();
+                const data = await response.json();
 
-                    if (response.ok) {
-                        closeEditModal();
-                        showSuccess('User berhasil diupdate!');
-                        loadUsers();
-                    } else {
-                        document.getElementById('editModalError').textContent = data.error || 'Gagal update user';
-                        document.getElementById('editModalError').classList.remove('hidden');
-                    }
-                } catch (error) {
-                    document.getElementById('editModalError').textContent = 'Error: ' + error.message;
-                    document.getElementById('editModalError').classList.remove('hidden');
+                if (response.ok) {
+                    document.getElementById('newUsername').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('newUserRole').value = 'User';
+
+                    showSuccess(`User "${data.username}" berhasil ditambahkan!`);
+                    loadUsers();
+                } else {
+                    showError(data.error || 'Gagal menambah user');
                 }
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+        }
+
+        function openEditModal(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            document.getElementById('editUserId').value = userId;
+            document.getElementById('editUsername').value = '';
+            document.getElementById('editPassword').value = '';
+            document.getElementById('editRole').value = user.role;
+            document.getElementById('editModalError').classList.add('hidden');
+
+            document.getElementById('editUserModal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editUserModal').classList.remove('show');
+        }
+
+        async function saveUserEdit() {
+            const userId = document.getElementById('editUserId').value;
+            const username = document.getElementById('editUsername').value.trim();
+            const password = document.getElementById('editPassword').value;
+            const role = document.getElementById('editRole').value;
+
+            const updates = {};
+            if (username) updates.username = username;
+            if (password) updates.password = password;
+            if (role) updates.role = role;
+
+            if (Object.keys(updates).length === 0) {
+                document.getElementById('editModalError').textContent = 'Tidak ada perubahan!';
+                document.getElementById('editModalError').classList.remove('hidden');
+                return;
             }
 
-            document.addEventListener('DOMContentLoaded', function () {
-                document.getElementById('todoInput')?.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') addTodo();
+            try {
+                const response = await fetch(`${API_URL}/admin/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(updates)
                 });
 
-                document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') login();
-                });
+                const data = await response.json();
 
-                document.getElementById('registerPassword')?.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') register();
-                });
+                if (response.ok) {
+                    closeEditModal();
+                    showSuccess('User berhasil diupdate!');
+                    loadUsers();
+                } else {
+                    document.getElementById('editModalError').textContent = data.error || 'Gagal update user';
+                    document.getElementById('editModalError').classList.remove('hidden');
+                }
+            } catch (error) {
+                document.getElementById('editModalError').textContent = 'Error: ' + error.message;
+                document.getElementById('editModalError').classList.remove('hidden');
+            }
+        }
 
-                document.getElementById('newPassword')?.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter' && currentUser?.role === 'Admin') {
-                        createNewUser();
-                    }
-                });
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('todoInput')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addTodo();
             });
 
-            (async function init() {
-                if (await checkAuth()) {
-                    showApp();
+            document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') login();
+            });
+
+            document.getElementById('registerPassword')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') register();
+            });
+
+            document.getElementById('newPassword')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && currentUser?.role === 'Admin') {
+                    createNewUser();
                 }
-            })();
+            });
+        });
+
+        (async function init() {
+            if (await checkAuth()) {
+                showApp();
+            }
+        })();
     </script>
 </body>
 
