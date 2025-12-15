@@ -1,4 +1,4 @@
-// main.rs - ULTRA SECURE TODO App with SQLite
+﻿// main.rs - ULTRA SECURE TODO App with SQLite
 use actix_web::{web, App, HttpResponse, HttpServer, Responder, HttpRequest};
 use actix_web::middleware::Logger;
 use actix_cors::Cors;
@@ -12,12 +12,12 @@ use std::str::FromStr;
 use std::fmt;
 use std::env;
 
-// 🔒 SECURITY: Use environment variable for JWT secret
+// ðŸ”’ SECURITY: Use environment variable for JWT secret
 // Fallback to strong default for development only
 fn get_jwt_secret() -> Vec<u8> {
     env::var("JWT_SECRET")
         .unwrap_or_else(|_| {
-            println!("⚠️  WARNING: Using default JWT secret. Set JWT_SECRET env var in production!");
+            println!("âš ï¸  WARNING: Using default JWT secret. Set JWT_SECRET env var in production!");
             "9k2JHd8f7GH3jk2L9mN4vB6xC8zD1eF5gH7iJ9kL2mN4pQ6rS8tU0vW2xY4zA6bC".to_string()
         })
         .into_bytes()
@@ -122,18 +122,34 @@ struct CreateUserRequest {
     role: UserRole,
 }
 
+#[derive(Debug, Deserialize)]
+struct UpdateUserRequest {
+    username: Option<String>,
+    password: Option<String>,
+    role: Option<UserRole>,
+}
+
+#[derive(Serialize)]
+struct UserInfoWithPassword {
+    id: i64,
+    username: String,
+    role: UserRole,
+    password_hash: String,
+}
+
+
 // ========== SECURITY LOGGING ==========
 
 fn log_security_event(event_type: &str, details: &str, req: &HttpRequest) {
     let timestamp = Utc::now().format("%Y-%m-%d %H:%M:%S UTC");
-    let conn_info = req.connection_info();  // ✅ binding yang bertahan lebih lama
+    let conn_info = req.connection_info();  // âœ… binding yang bertahan lebih lama
 let ip = conn_info.peer_addr().unwrap_or("unknown");
     let user_agent = req.headers()
         .get("user-agent")
         .and_then(|h| h.to_str().ok())
         .unwrap_or("unknown");
     
-    println!("\n🚨 SECURITY EVENT: {}", event_type);
+    println!("\nðŸš¨ SECURITY EVENT: {}", event_type);
     println!("   Time: {}", timestamp);
     println!("   IP: {}", ip);
     println!("   User-Agent: {}", user_agent);
@@ -234,7 +250,7 @@ async fn init_database() -> Result<SqlitePool, sqlx::Error> {
             .execute(&pool)
             .await?;
 
-        println!("✅ Default users created successfully!");
+        println!("âœ… Default users created successfully!");
     }
 
     Ok(pool)
@@ -269,7 +285,7 @@ fn verify_jwt(token: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
     Ok(token_data.claims)
 }
 
-// 🔒 CRITICAL SECURITY: Enhanced token validation with database verification
+// ðŸ”’ CRITICAL SECURITY: Enhanced token validation with database verification
 async fn get_user_from_token(req: &HttpRequest, pool: &SqlitePool) -> Result<User, String> {
     let auth_header = req
         .headers()
@@ -292,7 +308,7 @@ async fn get_user_from_token(req: &HttpRequest, pool: &SqlitePool) -> Result<Use
         "Invalid or expired token".to_string()
     })?;
 
-    // 🔒 SECURITY: Verify user exists in database
+    // ðŸ”’ SECURITY: Verify user exists in database
     let user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = ?")
         .bind(claims.sub)
         .fetch_optional(pool)
@@ -309,7 +325,7 @@ async fn get_user_from_token(req: &HttpRequest, pool: &SqlitePool) -> Result<Use
     match user {
         Some(u) => Ok(u),
         None => {
-            // 🚨 CRITICAL: Token with non-existent user_id
+            // ðŸš¨ CRITICAL: Token with non-existent user_id
             log_security_event(
                 "TOKEN_WITH_INVALID_USER",
                 &format!("Token claims user_id {} but user not found in database", claims.sub),
@@ -509,7 +525,7 @@ async fn create_todo(
     req: HttpRequest,
     todo: web::Json<CreateTodo>,
 ) -> impl Responder {
-    // 🔒 SECURITY: Get and verify user from token
+    // ðŸ”’ SECURITY: Get and verify user from token
     let user = match get_user_from_token(&req, &data.db).await {
         Ok(u) => u,
         Err(e) => {
@@ -524,7 +540,7 @@ async fn create_todo(
         }
     };
 
-    // 🔒 DOUBLE VERIFICATION: Ensure user exists in database
+    // ðŸ”’ DOUBLE VERIFICATION: Ensure user exists in database
     let user_exists: Option<(i64,)> = sqlx::query_as("SELECT id FROM users WHERE id = ?")
         .bind(user.id)
         .fetch_optional(&data.db)
@@ -556,7 +572,7 @@ async fn create_todo(
         }));
     }
 
-    println!("🔒 CREATE TODO Security Check:");
+    println!("ðŸ”’ CREATE TODO Security Check:");
     println!("   User ID from token: {}", user.id);
     println!("   Username: {}", user.username);
     println!("   Role: {}", user.role);
@@ -577,11 +593,11 @@ async fn create_todo(
                 completed: false,
                 user_id: user.id,
             };
-            println!("✅ TODO created: ID {} for user_id {}", new_todo.id, user.id);
+            println!("âœ… TODO created: ID {} for user_id {}", new_todo.id, user.id);
             HttpResponse::Ok().json(new_todo)
         }
         Err(e) => {
-            println!("❌ Failed to create TODO: {:?}", e);
+            println!("âŒ Failed to create TODO: {:?}", e);
             HttpResponse::InternalServerError().json(serde_json::json!({
                 "error": "Failed to create todo"
             }))
@@ -766,7 +782,7 @@ async fn delete_todo(
 
     match result {
         Ok(_) => {
-            println!("✅ TODO {} deleted by user {}", todo_id, user.id);
+            println!("âœ… TODO {} deleted by user {}", todo_id, user.id);
             HttpResponse::Ok().json(serde_json::json!({
                 "message": "Todo deleted successfully"
             }))
@@ -807,12 +823,13 @@ async fn get_all_users(
         .await
         .unwrap_or_default();
 
-    let user_infos: Vec<UserInfo> = users
+    let user_infos: Vec<UserInfoWithPassword> = users
         .iter()
-        .map(|u| UserInfo {
+        .map(|u| UserInfoWithPassword {
             id: u.id,
             username: u.username.clone(),
             role: UserRole::from_string(&u.role),
+            password_hash: u.password.clone(),
         })
         .collect();
 
@@ -907,6 +924,129 @@ async fn create_user(
     }
 }
 
+
+async fn update_user(
+    data: web::Data<AppState>,
+    req: HttpRequest,
+    path: web::Path<i64>,
+    update_req: web::Json<UpdateUserRequest>,
+) -> impl Responder {
+    let user = match get_user_from_token(&req, &data.db).await {
+        Ok(u) => u,
+        Err(_) => return HttpResponse::Unauthorized().json(serde_json::json!({
+            "error": "Unauthorized"
+        })),
+    };
+
+    let user_role = UserRole::from_string(&user.role);
+    if user_role != UserRole::Admin {
+        return HttpResponse::Forbidden().json(serde_json::json!({
+            "error": "Admin only"
+        }));
+    };
+
+    let user_id = path.into_inner();
+
+    let target_user: Option<User> = sqlx::query_as("SELECT * FROM users WHERE id = ?")
+        .bind(user_id)
+        .fetch_optional(&data.db)
+        .await
+      .unwrap_or(None);
+
+    let _target_user = match target_user {
+        Some(u) => u,
+        None => return HttpResponse::NotFound().json(serde_json::json!({
+            "error": "User not found"
+        })),
+    };
+
+    let mut updates = Vec::new();
+    if let Some(new_username) = &update_req.username {
+        if new_username.len() < 3 {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "Username minimal 3 karakter"
+            }));
+        }
+
+        let existing: Option<User> = sqlx::query_as("SELECT * FROM users WHERE username = ? AND id != ?")
+            .bind(new_username)
+            .bind(user_id)
+            .fetch_optional(&data.db)
+            .await
+            .unwrap_or(None);
+
+        if existing.is_some() {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "Username sudah digunakan"
+            }));
+        }
+
+        updates.push("username = ?");
+    }
+
+    if let Some(new_password) = &update_req.password {
+        if new_password.len() < 6 {
+            return HttpResponse::BadRequest().json(serde_json::json!({
+                "error": "Password minimal 6 karakter"
+            }));
+        }
+
+        updates.push("password = ?");
+    }
+
+    if update_req.role.is_some() {
+        updates.push("role = ?");
+    }
+
+    if updates.is_empty() {
+        return HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "No updates provided"
+        }));
+    }
+
+    let query = format!("UPDATE users SET {}  WHERE id = ?", updates.join(", "));
+    let mut query_builder = sqlx::query(&query);
+
+    if let Some(username) = &update_req.username {
+        query_builder = query_builder.bind(username);
+    }
+    if let Some(password) = &update_req.password {
+        let hashed = hash(password, DEFAULT_COST).unwrap();
+        query_builder = query_builder.bind(hashed);
+    }
+    if let Some(role) = &update_req.role {
+        query_builder = query_builder.bind(role.to_string());
+    }
+    query_builder = query_builder.bind(user_id);
+
+    match query_builder.execute(&data.db).await {
+        Ok(_) => {
+            log_security_event(
+                "USER_UPDATED_BY_ADMIN",
+                &format!("Admin {} updated user {}", user.id, user_id),
+                &req
+            );
+
+            let updated_user: User = sqlx::query_as("SELECT * FROM users WHERE id = ?")
+                .bind(user_id)
+                .fetch_one(&data.db)
+                .await
+                .unwrap();
+
+            HttpResponse::Ok().json(UserInfo {
+                id: updated_user.id,
+                username: updated_user.username,
+                role: UserRole::from_string(&updated_user.role),
+            })
+        }
+        Err(e) => {
+            println!("Error updating user: {:?}", e);
+            HttpResponse::InternalServerError().json(serde_json::json!({
+                "error": "Failed to update user"
+            }))
+        }
+    }
+}
 async fn delete_user(
     data: web::Data<AppState>,
     req: HttpRequest,
@@ -989,37 +1129,37 @@ async fn index() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
-    println!("\n🔒 ULTRA SECURE TODO APP - INITIALIZING");
+    println!("\nðŸ”’ ULTRA SECURE TODO APP - INITIALIZING");
     println!("==========================================");
     
-    println!("\n🔧 Initializing database...");
+    println!("\nðŸ”§ Initializing database...");
     let pool = init_database().await.expect("Failed to initialize database");
-    println!("✅ Database initialized!");
+    println!("âœ… Database initialized!");
 
-    println!("\n🚀 Server Configuration:");
+    println!("\nðŸš€ Server Configuration:");
     println!("   Address: http://localhost:8080");
     println!("   Database: todo_app.db");
     
-    println!("\n🔑 Demo Accounts:");
+    println!("\nðŸ”‘ Demo Accounts:");
     println!("   Admin: admin / admin123");
     println!("   User:  user  / user123");
     
-    println!("\n🛡️  SECURITY FEATURES ENABLED:");
-    println!("   ✅ JWT with strong secret key");
-    println!("   ✅ Database user verification on every request");
-    println!("   ✅ Token forgery detection");
-    println!("   ✅ Comprehensive security logging");
-    println!("   ✅ Role-based access control");
-    println!("   ✅ Input validation");
-    println!("   ✅ CORS protection");
-    println!("   ✅ Foreign key constraints");
-    println!("   ✅ Timestamp tracking");
+    println!("\nðŸ›¡ï¸  SECURITY FEATURES ENABLED:");
+    println!("   âœ… JWT with strong secret key");
+    println!("   âœ… Database user verification on every request");
+    println!("   âœ… Token forgery detection");
+    println!("   âœ… Comprehensive security logging");
+    println!("   âœ… Role-based access control");
+    println!("   âœ… Input validation");
+    println!("   âœ… CORS protection");
+    println!("   âœ… Foreign key constraints");
+    println!("   âœ… Timestamp tracking");
     
-    println!("\n⚠️  SECURITY NOTES:");
-    println!("   • Set JWT_SECRET environment variable in production");
-    println!("   • Monitor security_logs table for suspicious activity");
-    println!("   • Change default passwords immediately");
-    println!("   • Use HTTPS in production");
+    println!("\nâš ï¸  SECURITY NOTES:");
+    println!("   â€¢ Set JWT_SECRET environment variable in production");
+    println!("   â€¢ Monitor security_logs table for suspicious activity");
+    println!("   â€¢ Change default passwords immediately");
+    println!("   â€¢ Use HTTPS in production");
     
     println!("\n==========================================");
     println!("Server is ready to accept connections\n");
@@ -1044,6 +1184,7 @@ async fn main() -> std::io::Result<()> {
             .route("/api/todos/{id}", web::delete().to(delete_todo))
             .route("/api/admin/users", web::get().to(get_all_users))
             .route("/api/admin/users", web::post().to(create_user))
+            .route("/api/admin/users/{id}", web::put().to(update_user))
             .route("/api/admin/users/{id}", web::delete().to(delete_user))
             .route("/", web::get().to(index))
     })
