@@ -12,6 +12,13 @@ jsonwebtoken = "9"
 bcrypt = "0.15"
 chrono = "0.4"
 env_logger = "0.11"
-sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "sqlite"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "sqlite", "chrono"] }
 tokio = { version = "1", features = ["full"] }
 dotenv = "0.15"
+actix-governor = "0.6"
+rand = "0.8"
+aes-gcm = "0.10"
+base64 = "0.21"
+sha2 = "0.10"
+log = "0.4"
+actix-files = "0.6"
