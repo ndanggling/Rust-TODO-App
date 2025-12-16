@@ -1,40 +1,51 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rust TODO App - Secure</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
+
         .container {
             max-width: 700px;
             margin: 30px auto;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 30px;
         }
+
         .auth-container {
             max-width: 400px;
         }
+
         h1 {
             color: #667eea;
             text-align: center;
             margin-bottom: 10px;
             font-size: 2.5em;
         }
+
         .subtitle {
             text-align: center;
             color: #666;
             margin-bottom: 30px;
             font-size: 0.9em;
         }
+
         .user-info {
             background: #f8f9fa;
             padding: 15px;
@@ -44,6 +55,7 @@
             justify-content: space-between;
             align-items: center;
         }
+
         .user-badge {
             display: inline-block;
             padding: 5px 15px;
@@ -52,25 +64,32 @@
             font-weight: bold;
             margin-left: 10px;
         }
+
         .user-badge.admin {
             background: #dc3545;
             color: white;
         }
+
         .user-badge.user {
             background: #28a745;
             color: white;
         }
+
         .input-group {
             margin-bottom: 20px;
             position: relative;
         }
+
         .input-group label {
             display: block;
             margin-bottom: 8px;
             color: #333;
             font-weight: 500;
         }
-        input[type="text"], input[type="password"], select {
+
+        input[type="text"],
+        input[type="password"],
+        select {
             width: 100%;
             padding: 12px;
             border: 2px solid #e0e0e0;
@@ -78,13 +97,17 @@
             font-size: 16px;
             transition: border 0.3s;
         }
+
         input[type="password"] {
             padding-right: 45px;
         }
-        input:focus, select:focus {
+
+        input:focus,
+        select:focus {
             outline: none;
             border-color: #667eea;
         }
+
         .password-toggle {
             position: absolute;
             right: 12px;
@@ -94,9 +117,11 @@
             font-size: 20px;
             color: #666;
         }
+
         .password-toggle:hover {
             color: #667eea;
         }
+
         button {
             padding: 12px 25px;
             background: #667eea;
@@ -108,54 +133,79 @@
             font-weight: bold;
             transition: all 0.3s;
         }
+
         button:hover {
             background: #5568d3;
             transform: translateY(-2px);
         }
+
         button:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
         }
+
         button.secondary {
             background: #6c757d;
         }
+
         button.secondary:hover {
             background: #5a6268;
         }
+
         button.danger {
             background: #dc3545;
             padding: 8px 15px;
             font-size: 14px;
         }
+
         button.danger:hover {
             background: #c82333;
         }
+
+        button.warning {
+            background: #ffc107;
+            color: #212529;
+            padding: 8px 15px;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+
+        button.warning:hover {
+            background: #e0a800;
+        }
+
         .form-footer {
             text-align: center;
             margin-top: 20px;
             color: #666;
         }
+
         .form-footer a {
             color: #667eea;
             cursor: pointer;
             text-decoration: none;
         }
+
         .form-footer a:hover {
             text-decoration: underline;
         }
+
         .todo-input-group {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
         }
+
         .todo-input-group input {
             flex: 1;
         }
+
         .todo-list {
             list-style: none;
             margin-bottom: 20px;
         }
+
         .todo-item {
             display: flex;
             align-items: center;
@@ -165,42 +215,51 @@
             border-radius: 8px;
             transition: all 0.3s;
         }
+
         .todo-item:hover {
             background: #e9ecef;
             transform: translateX(5px);
         }
+
         .todo-item.completed {
             opacity: 0.6;
         }
+
         .todo-item.completed .todo-text {
             text-decoration: line-through;
             color: #999;
         }
+
         .todo-checkbox {
             width: 20px;
             height: 20px;
             margin-right: 15px;
             cursor: pointer;
         }
+
         .todo-text {
             flex: 1;
             font-size: 16px;
         }
+
         .empty-state {
             text-align: center;
             color: #999;
             padding: 40px;
             font-style: italic;
         }
+
         .admin-panel {
             margin-top: 30px;
             padding-top: 30px;
             border-top: 2px solid #e0e0e0;
         }
+
         .admin-panel h2 {
             color: #dc3545;
             margin-bottom: 20px;
         }
+
         .user-item {
             display: flex;
             justify-content: space-between;
@@ -210,6 +269,24 @@
             background: #f8f9fa;
             border-radius: 8px;
         }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .password-display {
+            font-family: monospace;
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 5px;
+        }
+
         .error-msg {
             background: #f8d7da;
             color: #721c24;
@@ -218,6 +295,7 @@
             margin-bottom: 15px;
             border: 1px solid #f5c6cb;
         }
+
         .success-msg {
             background: #d4edda;
             color: #155724;
@@ -226,14 +304,17 @@
             margin-bottom: 15px;
             border: 1px solid #c3e6cb;
         }
+
         .hidden {
             display: none !important;
         }
+
         .tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
         }
+
         .tab {
             flex: 1;
             padding: 12px;
@@ -243,29 +324,85 @@
             cursor: pointer;
             font-weight: 500;
         }
+
         .tab.active {
             background: #667eea;
             color: white;
         }
-        .security-badge {
-            display: inline-block;
-            background: #28a745;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
-            margin-left: 5px;
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+        }
+
+        .close-btn:hover {
+            color: #333;
+            transform: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
         }
     </style>
 </head>
+
 <body>
     <div id="authContainer" class="container auth-container">
         <h1>🦀 Rust TODO App</h1>
         <p class="subtitle">Sistem Autentikasi & Admin Panel <span class="security-badge">SECURE</span></p>
-        
+
         <div id="errorMsg" class="error-msg hidden"></div>
-        
+
         <div id="loginForm">
             <div class="input-group">
                 <label>Username</label>
@@ -280,13 +417,8 @@
             <div class="form-footer">
                 Belum punya akun? <a onclick="showRegister()">Daftar di sini</a>
             </div>
-            <div class="form-footer" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
-                <strong>Demo Account:</strong><br>
-                Admin: admin / admin123<br>
-                User: user / user123
-            </div>
         </div>
-        
+
         <div id="registerForm" class="hidden">
             <div class="input-group">
                 <label>Username</label>
@@ -306,8 +438,8 @@
 
     <div id="appContainer" class="container hidden">
         <h1>🦀 Rust TODO App</h1>
-        <p class="subtitle">Selamat datang! <span class="security-badge">PROTECTED</span></p>
-        
+        <p class="subtitle">Selamat datang! <span class="security-badge">(CONNECTION PROTECTED!)</span></p>
+
         <div class="user-info">
             <div>
                 <strong id="currentUsername"></strong>
@@ -326,14 +458,14 @@
                 <input type="text" id="todoInput" placeholder="Tambahkan TODO baru..." maxlength="200">
                 <button onclick="addTodo()">Tambah</button>
             </div>
-            
+
             <ul id="todoList" class="todo-list"></ul>
             <div id="emptyState" class="empty-state">Belum ada TODO. Mulai tambahkan sekarang!</div>
         </div>
 
         <div id="usersSection" class="admin-panel hidden">
             <h2>👥 User Management</h2>
-            
+
             <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
                 <h3 style="margin-bottom: 15px; color: #333;">➕ Tambah User Baru</h3>
                 <div class="input-group">
@@ -360,17 +492,85 @@
         </div>
     </div>
 
+    <!-- Edit User Modal -->
+    <div id="editUserModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit User</h3>
+                <button class="close-btn" onclick="closeEditModal()">×</button>
+            </div>
+            <div id="editModalError" class="error-msg hidden"></div>
+            <input type="hidden" id="editUserId">
+
+            <div class="input-group">
+                <label>Username (Optional)</label>
+                <input type="text" id="editUsername" placeholder="Biarkan kosong jika tidak diubah">
+            </div>
+            <div class="input-group">
+                <label>Password (Optional)</label>
+                <input type="password" id="editPassword" placeholder="Biarkan kosong jika tidak diubah">
+            </div>
+            <div class="input-group">
+                <label>Role</label>
+                <select id="editRole">
+                    <option value="User">User</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button class="secondary" onclick="closeEditModal()">Batal</button>
+                <button onclick="saveUserEdit()">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inspect Todo Modal -->
+    <div id="inspectTodoModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 id="inspectModalTitle">User Todos</h3>
+                <button class="close-btn" onclick="closeInspectModal()">×</button>
+            </div>
+            <div id="inspectList" style="max-height: 400px; overflow-y: auto;"></div>
+            <div class="modal-actions">
+                <button onclick="closeInspectModal()">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // 🔧 FIX: Tambahkan /api di akhir URL!
         const API_URL = 'https://porsha-brainlike-bula.ngrok-free.dev/api';
-        let authToken = localStorage.getItem('authToken');
         let currentUser = null;
         let currentTab = 'todos';
+        let allUsers = [];
+
+        // Helper to get cookie value by name
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        // Helper to get headers (includes CSRF for non-GET)
+        function getHeaders(method = 'GET') {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            if (method !== 'GET') {
+                const csrfToken = getCookie('XSRF-TOKEN');
+                if (csrfToken) {
+                    headers['X-XSRF-TOKEN'] = csrfToken;
+                }
+            }
+            return headers;
+        }
 
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
             const toggle = input.nextElementSibling;
-            
             if (input.type === 'password') {
                 input.type = 'text';
                 toggle.textContent = '🙈';
@@ -391,7 +591,6 @@
             const successDiv = document.createElement('div');
             successDiv.className = 'success-msg';
             successDiv.textContent = message;
-            
             const container = document.querySelector('#usersSection') || document.querySelector('#todosSection');
             if (container) {
                 container.insertBefore(successDiv, container.firstChild);
@@ -421,6 +620,7 @@
             }
 
             try {
+                // No token in response, cookies set automatically
                 const response = await fetch(`${API_URL}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -430,8 +630,6 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    authToken = data.token;
-                    localStorage.setItem('authToken', authToken);
                     currentUser = data.user;
                     showApp();
                 } else {
@@ -450,12 +648,10 @@
                 showError('Username dan password harus diisi!');
                 return;
             }
-
             if (username.length < 3) {
                 showError('Username minimal 3 karakter!');
                 return;
             }
-
             if (password.length < 6) {
                 showError('Password minimal 6 karakter!');
                 return;
@@ -471,8 +667,6 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    authToken = data.token;
-                    localStorage.setItem('authToken', authToken);
                     currentUser = data.user;
                     showApp();
                 } else {
@@ -483,34 +677,37 @@
             }
         }
 
-        function logout() {
-            authToken = null;
+        async function logout() {
+            try {
+                await fetch(`${API_URL}/logout`, {
+                    method: 'POST',
+                    headers: getHeaders('POST')
+                });
+            } catch (e) {
+                console.error("Logout error", e);
+            }
             currentUser = null;
-            localStorage.removeItem('authToken');
             document.getElementById('authContainer').classList.remove('hidden');
             document.getElementById('appContainer').classList.add('hidden');
             showLogin();
         }
 
         async function checkAuth() {
-            if (!authToken) {
-                return false;
-            }
-
             try {
-                const response = await fetch(`${API_URL}/me`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
+                // Browser sends cookies automatically
+                const response = await fetch(`${API_URL}/me`);
 
                 if (response.ok) {
                     currentUser = await response.json();
                     return true;
                 } else {
-                    logout();
+                    // Start fresh
+                    currentUser = null;
+                    document.getElementById('authContainer').classList.remove('hidden');
+                    document.getElementById('appContainer').classList.add('hidden');
                     return false;
                 }
             } catch (error) {
-                logout();
                 return false;
             }
         }
@@ -518,7 +715,7 @@
         function showApp() {
             document.getElementById('authContainer').classList.add('hidden');
             document.getElementById('appContainer').classList.remove('hidden');
-            
+
             document.getElementById('currentUsername').textContent = currentUser.username;
             const badge = document.getElementById('userBadge');
             badge.textContent = currentUser.role;
@@ -526,7 +723,7 @@
 
             const adminTabs = document.getElementById('adminTabs');
             const usersSection = document.getElementById('usersSection');
-            
+
             if (currentUser.role === 'Admin') {
                 adminTabs.classList.remove('hidden');
                 currentTab = 'todos';
@@ -543,10 +740,7 @@
 
         async function loadTodos() {
             try {
-                const response = await fetch(`${API_URL}/todos`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-
+                const response = await fetch(`${API_URL}/todos`); // Cookies sent auto
                 if (response.ok) {
                     const todos = await response.json();
                     renderTodos(todos);
@@ -561,25 +755,25 @@
         function renderTodos(todos) {
             const todoList = document.getElementById('todoList');
             const emptyState = document.getElementById('emptyState');
-            
+
             todoList.innerHTML = '';
-            
+
             if (todos.length === 0) {
                 emptyState.style.display = 'block';
                 return;
             }
-            
+
             emptyState.style.display = 'none';
-            
+
             todos.forEach(todo => {
                 const li = document.createElement('li');
                 li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
-                
+
                 let ownerBadge = '';
                 if (currentUser.role === 'Admin' && todo.user_id !== currentUser.id) {
-                    ownerBadge = ` <small style="color: #999;">(User ID: ${todo.user_id})</small>`;
+                    ownerBadge = ` <small style="color: #999;">(User ID: ${escapeHtml(todo.user_id)})</small>`;
                 }
-                
+
                 li.innerHTML = `
                     <input type="checkbox" class="todo-checkbox" 
                            ${todo.completed ? 'checked' : ''} 
@@ -600,19 +794,16 @@
         async function addTodo() {
             const input = document.getElementById('todoInput');
             const title = input.value.trim();
-            
+
             if (!title) {
                 showError('Masukkan TODO terlebih dahulu!');
                 return;
             }
-            
+
             try {
                 const response = await fetch(`${API_URL}/todos`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
+                    headers: getHeaders('POST'),
                     body: JSON.stringify({ title })
                 });
 
@@ -633,7 +824,7 @@
             try {
                 const response = await fetch(`${API_URL}/todos/${id}/toggle`, {
                     method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${authToken}` }
+                    headers: getHeaders('PUT')
                 });
 
                 if (response.ok) {
@@ -652,30 +843,31 @@
             try {
                 const response = await fetch(`${API_URL}/todos/${id}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${authToken}` }
+                    headers: getHeaders('DELETE')
                 });
 
                 if (response.ok) {
                     loadTodos();
                     showSuccess('TODO berhasil dihapus!');
                 } else {
-                    showError('Gagal menghapus TODO');
+                    showError('Gagal hapus TODO');
                 }
             } catch (error) {
                 showError('Error: ' + error.message);
             }
         }
 
+        // Admin functions
         function switchTab(tab) {
             if (currentUser.role !== 'Admin') {
                 showError('Akses ditolak!');
                 return;
             }
-            
+
             currentTab = tab;
-            
+
             document.querySelectorAll('.tab').forEach((btn, idx) => {
-                btn.classList.toggle('active', 
+                btn.classList.toggle('active',
                     (tab === 'todos' && idx === 0) || (tab === 'users' && idx === 1)
                 );
             });
@@ -696,12 +888,9 @@
                 showError('Akses ditolak!');
                 return;
             }
-            
-            try {
-                const response = await fetch(`${API_URL}/admin/users`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
 
+            try {
+                const response = await fetch(`${API_URL}/admin/users`);
                 if (response.ok) {
                     const users = await response.json();
                     renderUsers(users);
@@ -716,22 +905,35 @@
         function renderUsers(users) {
             const usersList = document.getElementById('usersList');
             usersList.innerHTML = '';
+            allUsers = users;
 
             users.forEach(user => {
                 const div = document.createElement('div');
                 div.className = 'user-item';
-                
+
                 const canDelete = user.id !== currentUser.id;
-                const deleteBtn = canDelete 
+                const deleteBtn = canDelete
                     ? `<button class="danger" onclick="deleteUser(${user.id})">Hapus</button>`
                     : '<button class="danger" disabled style="opacity: 0.5;">You</button>';
 
+                const viewBtn = `<button class="secondary" onclick="viewUserTodos(${user.id}, '${escapeHtml(user.username)}')">📂 Lihat</button>`;
+                const editBtn = `<button class="warning" onclick="openEditModal(${user.id})">Edit</button>`;
+
                 div.innerHTML = `
-                    <div>
-                        <strong>${escapeHtml(user.username)}</strong>
-                        <span class="user-badge ${user.role.toLowerCase()}">${user.role}</span>
+                    <div class="user-details">
+                        <div>
+                            <strong>${escapeHtml(user.username)}</strong>
+                            <span class="user-badge ${user.role.toLowerCase()}">${user.role}</span>
+                        </div>
+                        <div class="password-display" title="Password Hash (bcrypt)">
+                            🔒 ${user.password_hash}
+                        </div>
                     </div>
-                    ${deleteBtn}
+                    <div class="user-actions">
+                        ${viewBtn}
+                        ${editBtn}
+                        ${deleteBtn}
+                    </div>
                 `;
                 usersList.appendChild(div);
             });
@@ -742,13 +944,13 @@
                 showError('Akses ditolak!');
                 return;
             }
-            
+
             if (!confirm('Hapus user ini?')) return;
 
             try {
                 const response = await fetch(`${API_URL}/admin/users/${userId}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${authToken}` }
+                    headers: getHeaders('DELETE')
                 });
 
                 if (response.ok) {
@@ -767,7 +969,7 @@
                 showError('Akses ditolak!');
                 return;
             }
-            
+
             const username = document.getElementById('newUsername').value.trim();
             const password = document.getElementById('newPassword').value;
             const role = document.getElementById('newUserRole').value;
@@ -785,10 +987,7 @@
             try {
                 const response = await fetch(`${API_URL}/admin/users`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
+                    headers: getHeaders('POST'),
                     body: JSON.stringify({ username, password, role })
                 });
 
@@ -798,7 +997,7 @@
                     document.getElementById('newUsername').value = '';
                     document.getElementById('newPassword').value = '';
                     document.getElementById('newUserRole').value = 'User';
-                    
+
                     showSuccess(`User "${data.username}" berhasil ditambahkan!`);
                     loadUsers();
                 } else {
@@ -809,7 +1008,98 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        function openEditModal(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            document.getElementById('editUserId').value = userId;
+            document.getElementById('editUsername').value = '';
+            document.getElementById('editPassword').value = '';
+            document.getElementById('editRole').value = user.role;
+            document.getElementById('editModalError').classList.add('hidden');
+
+            document.getElementById('editUserModal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editUserModal').classList.remove('show');
+        }
+
+        async function saveUserEdit() {
+            const userId = document.getElementById('editUserId').value;
+            const username = document.getElementById('editUsername').value.trim();
+            const password = document.getElementById('editPassword').value;
+            const role = document.getElementById('editRole').value;
+
+            const updates = {};
+            if (username) updates.username = username;
+            if (password) updates.password = password;
+            if (role) updates.role = role;
+
+            if (Object.keys(updates).length === 0) {
+                document.getElementById('editModalError').textContent = 'Tidak ada perubahan!';
+                document.getElementById('editModalError').classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/admin/users/${userId}`, {
+                    method: 'PUT',
+                    headers: getHeaders('PUT'),
+                    body: JSON.stringify(updates)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    closeEditModal();
+                    showSuccess('User berhasil diupdate!');
+                    loadUsers();
+                } else {
+                    document.getElementById('editModalError').textContent = data.error || 'Gagal update user';
+                    document.getElementById('editModalError').classList.remove('hidden');
+                }
+            } catch (error) {
+                document.getElementById('editModalError').textContent = 'Error: ' + error.message;
+                document.getElementById('editModalError').classList.remove('hidden');
+            }
+        }
+
+        async function viewUserTodos(userId, username) {
+            document.getElementById('inspectModalTitle').textContent = `File: ${username}`;
+            const list = document.getElementById('inspectList');
+            list.innerHTML = '<p>Loading...</p>';
+            document.getElementById('inspectTodoModal').classList.add('show');
+
+            try {
+                const response = await fetch(`${API_URL}/admin/users/${userId}/todos`);
+                if (response.ok) {
+                    const todos = await response.json();
+                    if (todos.length === 0) {
+                        list.innerHTML = '<p style="color: #666; font-style: italic;">User ini belum memiliki TODO.</p>';
+                    } else {
+                        list.innerHTML = '<ul class="todo-list" style="margin: 0;">' +
+                            todos.map(t => `
+                                <li class="todo-item ${t.completed ? 'completed' : ''}" style="padding: 10px;">
+                                    <span class="todo-text">${escapeHtml(t.title)}</span>
+                                    <small>${t.completed ? '✅ Selesai' : '⏳ Pending'}</small>
+                                </li>
+                            `).join('') +
+                            '</ul>';
+                    }
+                } else {
+                    list.innerHTML = '<p style="color: red;">Gagal memuat data.</p>';
+                }
+            } catch (e) {
+                list.innerHTML = `<p style="color: red;">Error: ${e.message}</p>`;
+            }
+        }
+
+        function closeInspectModal() {
+            document.getElementById('inspectTodoModal').classList.remove('show');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('todoInput')?.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') addTodo();
             });
@@ -836,4 +1126,5 @@
         })();
     </script>
 </body>
+
 </html>
